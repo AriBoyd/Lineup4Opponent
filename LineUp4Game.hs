@@ -23,7 +23,10 @@ placeTokenColumn (Nothing : Nothing : rest) player = Nothing : placeTokenColumn 
 placeTokenColumn (Nothing : rest) player = Just player : rest -- Found the spot
 placeTokenColumn _ _ = error "No Free Space"
 
+placeToken :: Board -> Move -> Player -> Board
+placeToken board move player = take move board ++ [placeTokenColumn (board !! move) player] ++ drop (move + 1) board
+
 nextState :: GameState -> Move -> GameState
-nextState state move = placeToken board move player swapPlayer player
+nextState state move = (placeToken board move player, swapPlayer player)
   where
     (board, player) = state
