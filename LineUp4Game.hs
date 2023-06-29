@@ -51,7 +51,7 @@ compareWins player1 player2
 checkWinnerLine :: [Space] -> Maybe Player -- Test if a list of spaces has a four in a line
 checkWinnerLine (x1 : x2 : x3 : x4 : restLine)
   | x1 == x2 == x3 == x4 = Just x1 -- We found a four in a line
-  | otherwise = checkWinnerLine (x2 : x3 : x4 : restCol) -- Check the rest of the line
+  | otherwise = checkWinnerLine (x2 : x3 : x4 : restLine) -- Check the rest of the line
 checkWinnerLine _ = Nothing -- There are no vertical four in a lines
 
 checkWinnerRow :: [Column] -> Maybe Player -- Check the top row of the columns
