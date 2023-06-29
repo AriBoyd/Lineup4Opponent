@@ -49,10 +49,10 @@ compareWins player1 player2
     | otherwise = error "Both players somehow won"
 
 checkWinnerLine :: [Space] -> Maybe Player -- Test if a list of spaces has a four in a line
-checkWinnerLine (x1 : x2 : x3 : x4 : restLine)
-  | x1 == x2 == x3 == x4 = Just x1 -- We found a four in a line
-  | otherwise = checkWinnerLine (x2 : x3 : x4 : restLine) -- Check the rest of the line
-checkWinnerLine _ = Nothing -- There are no vertical four in a lines
+checkWinnerLine line
+  | length line < 4 = Nothing -- There are less than fours spaces left
+  | foldl (==) (take 4 line) = Just (head x1) -- We found a four in a line
+  | otherwise = checkWinnerLine (tail line) -- Check the rest of the line
 
 checkWinnerRows :: Board -> Maybe Player --Check each row
 checkWinnerRows [] = Nothing
