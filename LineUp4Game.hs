@@ -54,10 +54,12 @@ checkWinnerLine (x1 : x2 : x3 : x4 : restLine)
   | otherwise = checkWinnerLine (x2 : x3 : x4 : restLine) -- Check the rest of the line
 checkWinnerLine _ = Nothing -- There are no vertical four in a lines
 
-checkWinnerRow :: [Column] -> Maybe Player -- Check the top row of the columns
-checkWinnerRow ()
-
 checkWinnerRows :: Board -> Maybe Player --Check each row
+checkWinnerRows [] = Nothing
+checkWinnerRows rows
+    | firstRow == Nothing = checkWinnerRows (map tail rows)
+    | otherwise = firstRow
+    where firstRow = checkWinnerLine (map head rows)
 
 checkWinnerCols :: Board -> Maybe Player
 checkWinnerCols [] = Nothing -- There are no vertical four in a lines
