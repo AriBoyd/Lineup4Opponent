@@ -40,13 +40,27 @@ freeSpace _ = False
 getValidMoves :: GameState -> [Move]
 getValidMoves (board, _) = findIndices freeSpace board
 
-checkWinnerRows :: Board -> Maybe Player
+compareWins :: Maybe Player -> Maybe Player -> Maybe Player
+compareWins Nothing Nothing = Nothing
+compareWins player Nothing = player
+compareWins Nothing player = player -- There should only ever be one winner
+compareWins player1 player2
+    | player1==player2 = player1
+    | otherwise = error "Both players somehow won"
+
+checkWinnerLine :: [Space] -> Maybe Player -- Test if a list of spaces has a four in a line
+checkWinnerLine (x1 : x2 : x3 : x4 : restLine)
+  | x1 == x2 == x3 == x4 = Just x1 -- We found a four in a line
+  | otherwise = checkWinnerLine (x2 : x3 : x4 : restCol) -- Check the rest of the line
+checkWinnerLine _ = Nothing -- There are no vertical four in a lines
+
+checkWinnerRow :: [Column] -> Maybe Player -- Check the top row of the columns
+checkWinnerRow ()
+
+checkWinnerRows :: Board -> Maybe Player --Check each row
 
 checkWinnerCols :: Board -> Maybe Player
 checkWinnerCols [] = Nothing -- There are no vertical four in a lines
-checkWinnerCols ((x1:x2:x3:x4:restCol):rest)
-    | x1==x2==x3==x4 = Just x1 -- We found a four in a line
-    | otherwise = checkWinnerCols ((x2:x3:x4:restCol):rest) -- Check the rest of the column
 checkWinnerCols ([_,_,_]:rest) = checkWinnerCols rest -- Can't have four in a line with three elements
 
 checkWinnerDiagLRs :: Board -> Maybe Player
