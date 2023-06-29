@@ -1,10 +1,11 @@
 import Data.List (findIndices)
+import Data.Maybe (isNothing)
 
 -- There are two players, Red and Yellow
-data Player = Red | Yellow
+data Player = Red | Yellow deriving (Eq)
 
 -- A space can have either player's token, or be empty
-data Space = Player | Empty
+data Space = Colour Player | Empty deriving (Eq)
 
 type Column = [Space] -- 0th index is considered the top row, 6th is the bottom
 
@@ -22,7 +23,7 @@ swapPlayer Yellow = Red
 placeTokenColumn :: Column -> Player -> Column
 placeTokenColumn [] _ = error "Empty Column"
 placeTokenColumn (Empty : Empty : rest) player = Empty : placeTokenColumn (Empty : rest) player -- Descend a row
-placeTokenColumn (Empty : rest) player = player : rest -- Found the lowest empty space
+placeTokenColumn (Empty : rest) player = Colour player : rest -- Found the lowest empty space
 placeTokenColumn _ _ = error "No Free Space"
 
 placeToken :: Board -> Move -> Player -> Board
@@ -40,37 +41,49 @@ freeSpace _ = False
 getValidMoves :: GameState -> [Move]
 getValidMoves (board, _) = findIndices freeSpace board
 
+-- Allows folding results of the different line up 4 checks
 compareWins :: Maybe Player -> Maybe Player -> Maybe Player
 compareWins Nothing Nothing = Nothing
 compareWins player Nothing = player
 compareWins Nothing player = player -- There should only ever be one winner
 compareWins player1 player2
-    | player1==player2 = player1
-    | otherwise = error "Both players somehow won"
+  | player1 == player2 = player1
+  | otherwise = error "Both players somehow won"
 
 checkWinnerLine :: [Space] -> Maybe Player -- Test if a list of spaces has a four in a line
 checkWinnerLine line
   | length line < 4 = Nothing -- There are less than four spaces left
-  | foldl (==) (take 4 line) = Just (head x1) -- We found a four in a line
+  | head line == Empty = checkWinnerLine (tail line) -- Check the rest of the line
+  | all (== Colour Red) (take 4 line) = Just Red
+  | all (== Colour Yellow) (take 4 line) = Just Yellow
   | otherwise = checkWinnerLine (tail line) -- Check the rest of the line
 
-checkWinnerRows :: Board -> Maybe Player --Check each row
+checkWinnerRows :: Board -> Maybe Player -- Check each row
 checkWinnerRows [] = Nothing
 checkWinnerRows rows
-    | firstRowWinner == Nothing = checkWinnerRows (map tail rows)
-    | otherwise = firstRowWinner
-    where firstRowWinner = checkWinnerLine (map head rows)
+  | isNothing firstRowWinner = checkWinnerRows (map tail rows)
+  | otherwise = firstRowWinner
+  where
+    firstRowWinner = checkWinnerLine (map head rows)
 
 checkWinnerCols :: Board -> Maybe Player
-checkWinnerCols [] = Nothing -- There are no vertical four in a lines
+checkWinnerCols [] = Nothing
 checkWinnerCols cols
-  | firstColWinner == Nothing = checkWinnerCols (tail cols)
+  | isNothing firstColWinner = checkWinnerCols (tail cols)
   | otherwise = firstColWinner
-    where firstColWinner = checkWinnerLine (head cols)
+  where
+    firstColWinner = checkWinnerLine (head cols)
 
-checkWinnerDiagLRs :: Board -> Maybe Player
-
-checkWinnerDiagRLs :: Board -> Maybe Player
+checkWinnerDiags :: Board -> Maybe Player
+checkWinnerDiags [] = Nothing
+checkWinnerDiags board
+  | length board < 4 || length (head board) < 4 = Nothing
+  | isNothing firstDiagWinner = compareWins (checkWinnerDiags (tail board)) (checkWinnerDiags (map tail board))
+  | otherwise = firstDiagWinner
+  where
+    firstDiagLRWinner = checkWinnerLine [board !! x !! x | x <- [0 .. 3]] -- Get the left right diagonal
+    firstDiagRLWinner = checkWinnerLine [board !! x !! y | x <- [0 .. 3], y <- [3, 2 .. 0]] -- Get the left right diagonal
+    firstDiagWinner = compareWins firstDiagLRWinner firstDiagRLWinner
 
 checkWinner :: GameState -> Maybe Player -- Assumes there will be at most one winner, since the game ends after a player wins
-checkWinner (board,_) = 
+checkWinner (board, _) = foldl1 compareWins (map ($ board) [checkWinnerRows, checkWinnerCols, checkWinnerDiags])
