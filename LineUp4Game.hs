@@ -4,8 +4,16 @@ import Data.Maybe (isNothing)
 -- There are two players, Red and Yellow
 data Player = Red | Yellow deriving (Eq)
 
+instance Show Player where
+  show Red = "X"
+  show Yellow = "O"
+
 -- A space can have either player's token, or be empty
 data Space = Colour Player | Empty deriving (Eq)
+
+instance Show Space where
+  show Colour player = show player
+  show Empty = " "
 
 type Column = [Space] -- 0th index is considered the top row, 6th is the bottom
 
@@ -90,3 +98,7 @@ checkWinner (board, _) = foldl1 compareWins (map ($ board) [checkWinnerRows, che
 
 initialiseGame :: GameState
 initialiseGame = ([[Empty | _ <- [1 .. 6]] | _ <- [1 .. 7]], Red) -- An empty 7x6 board, and Red starts
+
+displayState :: GameState -> String -- Displays a gamestate, without trying to override the Show method
+displayState ([], player) = "It is " ++ show player ++ "'s turn"
+displayState (board, player) = show (map head board) ++ "\n" ++ displayState (show (map tail board))
