@@ -87,3 +87,6 @@ checkWinnerDiags board
 
 checkWinner :: GameState -> Maybe Player -- Assumes there will be at most one winner, since the game ends after a player wins
 checkWinner (board, _) = foldl1 compareWins (map ($ board) [checkWinnerRows, checkWinnerCols, checkWinnerDiags])
+
+initialiseGame :: GameState
+initialiseGame = ([[Empty | _ <- [1 .. 6]] | _ <- [1 .. 7]], Red) -- An empty 7x6 board, and Red starts
