@@ -1,3 +1,4 @@
+import Data.Char (digitToInt)
 import Data.List (findIndices)
 import Data.Maybe (isNothing)
 
@@ -12,7 +13,8 @@ instance Show Player where
 data Space = Colour Player | Empty deriving (Eq)
 
 instance Show Space where
-  show Colour player = show player
+  show :: Space -> String
+  show (Colour player) = show player
   show Empty = " "
 
 type Column = [Space] -- 0th index is considered the top row, 6th is the bottom
@@ -100,5 +102,18 @@ initialiseGame :: GameState
 initialiseGame = ([[Empty | _ <- [1 .. 6]] | _ <- [1 .. 7]], Red) -- An empty 7x6 board, and Red starts
 
 displayState :: GameState -> String -- Displays a gamestate, without trying to override the Show method
-displayState ([], player) = "It is " ++ show player ++ "'s turn"
-displayState (board, player) = show (map head board) ++ "\n" ++ displayState (show (map tail board))
+displayState (board, player)
+  | null (head board) = "It is " ++ show player ++ "'s turn\n"
+  | otherwise = show (map head board) ++ "\n" ++ displayState (map tail board, player)
+
+class Agent where -- General definition of a player, either AI or human
+  takeTurn :: GameState -> IO Move
+
+instance Agent Human where
+    takeTurn (board, player) = do fmap digitToInt getChar
+
+instance Agent Front where
+    takeTurn state = head (getValidMoves state)
+
+gameLoop :: GameState -> Agent -> IO GameState
+gameLoop (board, player) = 
