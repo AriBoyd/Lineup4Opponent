@@ -1,11 +1,12 @@
 import Data.Char (digitToInt)
 import Data.List (findIndices)
-import Data.Maybe (isNothing)
+import Data.Maybe (fromJust, isNothing)
 
 -- There are two players, Red and Yellow
 data Player = Red | Yellow deriving (Eq)
 
 instance Show Player where
+  show :: Player -> String
   show Red = "X"
   show Yellow = "O"
 
@@ -106,14 +107,24 @@ displayState (board, player)
   | null (head board) = "It is " ++ show player ++ "'s turn\n"
   | otherwise = show (map head board) ++ "\n" ++ displayState (map tail board, player)
 
-class Agent where -- General definition of a player, either AI or human
-  takeTurn :: GameState -> IO Move
+takeTurnHuman :: GameState -> IO Move
+takeTurnHuman (board, player) = do fmap digitToInt getChar
 
-instance Agent Human where
-    takeTurn (board, player) = do fmap digitToInt getChar
+takeTurnFront :: GameState -> Move -- Places token in the leftmost available column
+takeTurnFront state = head (getValidMoves state)
 
-instance Agent Front where
-    takeTurn state = head (getValidMoves state)
+gameLoop :: GameState -> (GameState -> Move) -> (GameState -> Move) -> IO Player -- Loops until a player wins
+gameLoop state agentNow agentNext
+  | isNothing winner = do
+      -- Get the next state, swap the agents
+      let newState = (nextState state . agentNow) state
+      putStr $ show newState
+      gameLoop newState agentNext agentNow
+  | otherwise = return $ fromJust winner -- Found a winner
+  where
+    winner = checkWinner state
 
-gameLoop :: GameState -> Agent -> IO GameState
-gameLoop (board, player) = 
+gameInit :: IO ()
+gameInit = do
+  winner <- gameLoop initialiseGame takeTurnFront takeTurnFront
+  putStr $ "The winner is: " ++ show winner
