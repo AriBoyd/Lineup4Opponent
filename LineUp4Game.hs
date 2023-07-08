@@ -6,12 +6,7 @@ import Data.Maybe (fromJust, isNothing)
 import Text.Read
 
 -- There are two players, Red and Yellow
-data Player = Red | Yellow deriving (Eq)
-
-instance Show Player where
-  show :: Player -> String
-  show Red = "X"
-  show Yellow = "O"
+data Player = X | O deriving (Eq, Show)
 
 -- A space can have either player's token, or be empty
 data Space = Colour Player | Empty deriving (Eq)
@@ -31,8 +26,8 @@ type Move = Int
 type GameState = (Board, Player)
 
 swapPlayer :: Player -> Player
-swapPlayer Red = Yellow
-swapPlayer Yellow = Red
+swapPlayer X = O
+swapPlayer O = X
 
 placeTokenColumn :: Column -> Player -> Column
 placeTokenColumn [] _ = error "Empty Column"
@@ -68,8 +63,8 @@ checkWinnerLine :: [Space] -> Maybe Player -- Test if a list of spaces has a fou
 checkWinnerLine line
   | length line < 4 = Nothing -- There are less than four spaces left
   | head line == Empty = checkWinnerLine (tail line) -- Check the rest of the line
-  | all (== Colour Red) (take 4 line) = Just Red
-  | all (== Colour Yellow) (take 4 line) = Just Yellow
+  | all (== Colour X) (take 4 line) = Just X
+  | all (== Colour O) (take 4 line) = Just O
   | otherwise = checkWinnerLine (tail line) -- Check the rest of the line
 
 checkWinnerRows :: Board -> Maybe Player -- Check each row
@@ -104,7 +99,7 @@ checkWinner :: GameState -> Maybe Player -- Assumes there will be at most one wi
 checkWinner (board, _) = foldl1 compareWins (map ($ board) [checkWinnerRows, checkWinnerCols, checkWinnerDiags])
 
 initialiseGame :: GameState
-initialiseGame = ([[Empty | _ <- [1 .. 6]] | _ <- [1 .. 7]], Red) -- An empty 7x6 board, and Red starts
+initialiseGame = ([[Empty | _ <- [1 .. 6]] | _ <- [1 .. 7]], X) -- An empty 7x6 board, and Red starts
 
 displayState :: GameState -> String -- Displays a gamestate, without trying to override the Show method
 displayState (board, player)
