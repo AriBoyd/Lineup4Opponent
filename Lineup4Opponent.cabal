@@ -30,6 +30,7 @@ executable Lineup4Opponent
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
     build-depends:    
-        base ^>=4.16.4.0
+        base ^>=4.16.4.0,
+        QuickCheck >= 2.14
     hs-source-dirs:   app
     default-language: Haskell2010

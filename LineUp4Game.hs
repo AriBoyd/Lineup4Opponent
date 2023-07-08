@@ -1,6 +1,9 @@
+module LineUp4Game where
+
 import Data.Char (digitToInt)
 import Data.List (findIndices)
 import Data.Maybe (fromJust, isNothing)
+import Text.Read
 
 -- There are two players, Red and Yellow
 data Player = Red | Yellow deriving (Eq)
@@ -71,12 +74,12 @@ checkWinnerLine line
 
 checkWinnerRows :: Board -> Maybe Player -- Check each row
 checkWinnerRows [] = Nothing
-checkWinnerRows rows
-  | length (head rows) < 4 = Nothing
-  | isNothing firstRowWinner = checkWinnerRows (map tail rows)
+checkWinnerRows cols
+  | length (head cols) < 4 = Nothing
+  | isNothing firstRowWinner = checkWinnerRows (map tail cols)
   | otherwise = firstRowWinner
   where
-    firstRowWinner = checkWinnerLine (map head rows)
+    firstRowWinner = checkWinnerLine (map head cols)
 
 checkWinnerCols :: Board -> Maybe Player
 checkWinnerCols [] = Nothing
