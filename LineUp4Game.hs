@@ -70,7 +70,7 @@ checkWinnerLine line
 checkWinnerRows :: Board -> Maybe Player -- Check each row
 checkWinnerRows [] = Nothing
 checkWinnerRows cols
-  | length (head cols) < 4 = Nothing
+  | null (head cols) = Nothing
   | isNothing firstRowWinner = checkWinnerRows (map tail cols)
   | otherwise = firstRowWinner
   where
