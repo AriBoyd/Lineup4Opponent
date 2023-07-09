@@ -109,14 +109,15 @@ displayState (board, player)
 takeTurnHuman :: GameState -> IO Move
 takeTurnHuman (board, player) = do fmap digitToInt getChar
 
-takeTurnFront :: GameState -> Move -- Places token in the leftmost available column
-takeTurnFront state = head (getValidMoves state)
+takeTurnFront :: GameState -> IO Move -- Places token in the leftmost available column
+takeTurnFront state = return $ head (getValidMoves state)
 
-gameLoop :: GameState -> (GameState -> Move) -> (GameState -> Move) -> IO Player -- Loops until a player wins
+gameLoop :: GameState -> (GameState -> IO Move) -> (GameState -> IO Move) -> IO Player -- Loops until a player wins
 gameLoop state agentNow agentNext
   | isNothing winner = do
       -- Get the next state, swap the agents
-      let newState = (nextState state . agentNow) state
+      move <- agentNow state
+      let newState = nextState state move
       putStrLn $ displayState newState
       gameLoop newState agentNext agentNow
   | otherwise = return $ fromJust winner -- Found a winner
@@ -127,7 +128,7 @@ gameInit :: IO ()
 gameInit = do
   let startState = initialiseGame
   putStrLn $ displayState startState
-  winner <- gameLoop startState takeTurnFront takeTurnFront
+  winner <- gameLoop startState takeTurnHuman takeTurnFront
   putStrLn $ "The winner is: " ++ show winner
 
 main :: IO ()
