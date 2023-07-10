@@ -103,11 +103,13 @@ initialiseGame = ([[Empty | _ <- [1 .. 6]] | _ <- [1 .. 7]], X) -- An empty 7x6 
 
 displayState :: GameState -> String -- Displays a gamestate, without trying to override the Show method
 displayState (board, player)
-  | null (head board) = "It is " ++ show player ++ "'s turn\n"
-  | otherwise = show (map head board) ++ "\n" ++ displayState (map tail board, player)
+  | null (head board) = "\nIt is " ++ show player ++ "'s turn\n"
+  | otherwise = "\n" ++ show (map head board) ++ displayState (map tail board, player)
 
 takeTurnHuman :: GameState -> IO Move
-takeTurnHuman (board, player) = do fmap digitToInt getChar
+takeTurnHuman (board, player) = do
+  putStrLn $ "Your Move " ++ show player
+  fmap digitToInt getChar
 
 takeTurnFront :: GameState -> IO Move -- Places token in the leftmost available column
 takeTurnFront state = return $ head (getValidMoves state)
