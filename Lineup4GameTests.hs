@@ -10,6 +10,3 @@ testEquals (TestCase function test expected) = function test == expected
 
 evaluateTests :: Eq e => TestSuite t e -> [Bool]
 evaluateTests = map testEquals
-
-testscheckWinnerLine :: TestSuite [Space] (Maybe Player)
-testscheckWinnerLine = [TestCase checkWinnerLine []]
